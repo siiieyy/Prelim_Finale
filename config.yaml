@@ -1,0 +1,43 @@
+---
+- hosts: all
+  become: true
+  tasks:
+  
+  - name: Install python3 and pip3
+    package:
+      name: 
+        - python3 
+        - python3-pip
+      state: latest
+
+  - name: Use pip3 as default pip
+    pip:
+      name: pip
+      executable: pip3
+      
+  - name: Use python3 as default python
+    raw: update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.x 1
+    when: inventory_hostname == 'all'
+
+  - name: Install Java in Ubuntu
+    apt: 
+      name: openjdk-11-jdk
+      state: latest
+    when: ansible_distribution == "Ubuntu"
+
+  - name: Install Java in Cent OS
+    package:
+      name: java-11-openjdk-devel
+      state: latest
+      update_cache: yes
+    when: ansible_distribution == "CentOS"
+
+  - name: Create Motd
+    copy:
+      content: "{{ motd_text | default('Ansible Managed node by Niemo') }}"
+      dest: /etc/motd
+      
+  - name: Create user
+    user:
+      name: "{{ 'Niemo' }}"
+      state: present
